@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Horoscope</title>
+  <!-- Bootstrap core CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker3.css" rel="stylesheet">
+  <!-- Custom styles for this template -->
+  <link href="stylesheets/dashboard.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="logo pull-left"><a herf="#">派大星生命靈數</a></h1>
+    <h2 class="slogan pull-right">全宇宙<strong>最準確</strong>的生命靈數測驗</h2>
+  </div>
+
+  <div class="container">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+      <form action="" method="post" id="form">
+        <font color="purple"><strong>請輸入您的出生年份︰</strong></font>
+        <br>
+        <p>
+          <div class="input-group">
+            <input id="birthdate" class="form-control" type="text" name="birthdate">
+            <span class="input-group-btn">
+                <a href="#" id="analysis" type="button" class="btn btn-primary">分析結果</a>
+              </span>
+          </div>
+        </p>
+      </form>
+    </div>
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+      <div class="panel panel-default">
+        <font color="blue"><strong><div class="text-center">結果</div></strong></font>
+        <ul id="results" class="list-group">
+          <!--
+            <li class="list-group-item">
+              <p>
+                <em>2000/1/1</em> 的你，星座是 <em>獅子座</em>
+              </p>
+              <p>
+                你的生命靈數：<br>
+                1. 你是Leo獅子座中最為自我的，但可能因此造成人際問題。
+              </p>
+            </li>
+            -->
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/locales/bootstrap-datepicker.zh-TW.min.js"></script>
+  <script>
+    $(function () {
+
+      $("#birthdate").datepicker({
+        language: 'zh-TW',
+        format: 'yyyy-mm-dd'
+      });
+
+      function dateToHoroscopeName(dateString) {
+        var date = new Date(dateString),
+          m = date.getMonth() + 1,
+          d = date.getDate();
+
+        if ((m == 1 && d >= 21) || (m == 2 && d <= 19)) {
+          return "aquarius";
+        } else if ((m == 2 && d >= 20) || (m == 3 && d <= 20)) {
+          return "pisces";
+        } else if ((m == 3 && d >= 21) || (m == 4 && d <= 19)) {
+          return "aries";
+        } else if ((m == 4 && d >= 20) || (m == 5 && d <= 20)) {
+          return "taurus";
+        } else if ((m == 5 && d >= 21) || (m == 6 && d <= 21)) {
+          return "gemini";
+        } else if ((m == 6 && d >= 22) || (m == 7 && d <= 22)) {
+          return "cancer";
+        } else if ((m == 7 && d >= 23) || (m == 8 && d <= 22)) {
+          return "leo";
+        } else if ((m == 8 && d >= 23) || (m == 9 && d <= 22)) {
+          return "virgo";
+        } else if ((m == 9 && d >= 23) || (m == 10 && d <= 23)) {
+          return "libra";
+        } else if ((m == 10 && d >= 24) || (m == 11 && d <= 21)) {
+          return "scorpio";
+        } else if ((m == 11 && d >= 22) || (m == 12 && d <= 20)) {
+          return "sagittarius";
+        } else /*if ((m == 12 && d >= 21) || (m == 1 && d <= 20))*/ {
+          return "capricorn";
+        }
+      }
+
+      function getNumerologyIndex(dateString) {
+        var date = new Date(dateString),
+          y = date.getFullYear().toString(),
+          m = (date.getMonth() + 1).toString(),
+          d = date.getDate().toString();
+
+        var ymd = y + m + d;
+
+        return getIndex(ymd);
+      }
+
+      function getIndex(source) {
+        var result = 0;
+
+        for (var i = 0; i < source.length; i++) {
+          result = result + parseInt(source[i]);
+        }
+
+        if (result > 9) {
+          result = getIndex(result.toString());
+        }
+
+        return result;
+      }
+
+      function doAnalysis() {
+        var birthdate = $("#birthdate").val();
+
+        // yyyy/mm/dd to "aquarius", "pisces", or others ...
+        var name = dateToHoroscopeName(birthdate);
+
+        // equal to horoscopeData.aquarius, or others
+        //var yourHoroscope = horoscopeData[name];
+        var url =
+          "https://gist.githubusercontent.com/dinowang/5290d4cebf96a666c29ab0878afeb2f1/raw/9516581cb54154d070cf287ebd31d9bce217a495/" +
+          name + ".json";
+
+        $.ajax({
+          type: "GET",
+          url: url,
+          data: null,
+          dataType: "json",
+          error: function (result, status, xhr) {
+            alert("無法取得 server 上的資料");
+          },
+          success: function (result, status, xhr) {
+            var index = getNumerologyIndex(birthdate);
+
+            var html = "<p><span class='label label-info'>" +
+              birthdate + "</span> 出生的你，星座是 <em>" +
+              result.name + "</em></p>" +
+              "<p>你的生命靈數：<br>" + index + ". " +
+              result.lookup[index - 1] + "</p>";
+
+            $("<li></li>")
+              .addClass("list-group-item")
+              .html(html)
+              .prependTo("#results");
+          }
+        });
+      }
+
+      $("#analysis").click(function () {
+        doAnalysis();
+      });
+
+      $("#birthdate").keyup(function (event) {
+        if (event.keyCode == 13) {
+          doAnalysis();
+        }
+      });
+
+    });
+  </script>
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      background-image: url('http://i191.photobucket.com/albums/z16/mokitty428/34-1.gif');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      background-size: contain;
+    }
+
+    h1.logo a {
+      display: block;
+      text-indent: 110%;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 376px;
+      height: 81px;
+      background: url('data:image/jpeg;base64,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') no-repeat;
+    }
+
+    h2.header .slogan {
+      margin-top: 40px;
+    }
+
+    h2.slogan strong {
+      font-size: 1.5em;
+      color: #ff8086;
+    }
+  </style>
+</body>
+
+</html>
